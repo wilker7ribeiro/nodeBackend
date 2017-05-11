@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 
-const cookieParser = require('cookie-parser')
+//const cookieParser = require('cookie-parser')
 const cookieSession = require('cookie-session')
 const uuidV4 = require('uuid/v4');
 
@@ -37,38 +37,28 @@ app.use(cookieSession({
   keys: ['m3u-s3gr3d0-c00k13s'],
   httpOnly: true,
   secure: false,
-  maxAge: /*24 * 60 * 60 * */5000 // 24 hours
- 
+  maxAge: 2 * 60 * 60 * 1000 //Após 2 horas de inatividade, a sessão se perde
 }))
 
-
-app.use(function (req, res, next) {
-  
-  next()
-})
-
-app.use(cookieParser("meusegredocookie"))
+//app.use(cookieParser("meusegredocookie"))
 
 app.use(function (req, res, next) {
   //console.log(req.session)
-  req.session.sessionId = req.session.sessionId || uuidV4();
-  req.session.ultimaData = new Date()
+  req.session.sessionId = req.session.sessionId || uuidV4(); //se já existir uma sessão, continua com o mesmo id, se não, cria um novo
+  req.session.ultimaData = new Date() //qualquer alteração nos cookies reseta o tempo de vida dele
   //res.cookie("sessionId" , req.cookies.sessionId || uuidV4())
   //console.log(req.sessionOptions)
   next()
 })
 
 app.use(function (req, res, next) {
-  //console.log(req.session.ultimaData)
- 
-
+  console.log(req.session)
   next()
 })
 
 
 
 app.get('/test', function(req, res){
-
 	//console.log('iuu')
   /*res.render('index', function(err, html){
   	console.log('iuu')
