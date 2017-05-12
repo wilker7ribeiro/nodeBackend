@@ -1,6 +1,6 @@
 //const express = require('express');
 "use strict";
-var SQLString = require('./sqlInstructionMount')
+var SQLString = require('./SQLSTring')
 var mysql     =    require('mysql');
 
 var pool      =    mysql.createPool({
@@ -54,6 +54,12 @@ var executarQuery = function(instrucao, argumentos , cb){
 }
 
 
+var count = function(tabela, cb){
+	executarQuery("select count(*) from ??", tabela,function(err, data){
+		cb(err, data)
+	})
+}
+
 var getAll = function(tabela, cb){
 	executarQuery("select * from ??", tabela,function(err, data){
 		cb(err, data)
@@ -61,16 +67,20 @@ var getAll = function(tabela, cb){
 }
 
 var getAllWhere = function(tabela,value , cb){
-	executarQuery("select * from ?? where ?", [tabela, value],function(err, data){
+	executarQuery("select * from user where ?", [tabela, value],function(err, data){
 		cb(err, data)
 	})
 }
 
 var sqlString = new SQLString();
-sqlString.select('*').from('user', 'u').join('pessoa', 'p').on("u.iduser = p.iduser").where({'u.iduser': 1});
-console.log(mysql.format(sqlString.string, sqlString.argumentos))
+sqlString.select(['p.nome', 'p.idpessoa', 'p.iduser']).from('pessoa','p');
+/*console.log(sqlString)
+console.log(mysql.format(sqlString.string, sqlString.argumentos));
 
 executarQuery(sqlString.string , sqlString.argumentos, function(err, data){
+	console.log(data);
+})*/
+count('user', function(err,data){
 	console.log(data)
 })
 

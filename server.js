@@ -42,23 +42,28 @@ app.use(cookieSession({
 
 //app.use(cookieParser("meusegredocookie"))
 
+//RequestHandler
 app.use(function (req, res, next) {
   //console.log(req.session)
+  req.location = req.headers['accept-language'].split(',')[0];
   req.session.sessionId = req.session.sessionId || uuidV4(); //se já existir uma sessão, continua com o mesmo id, se não, cria um novo
-  req.session.ultimaData = new Date() //qualquer alteração nos cookies reseta o tempo de vida dele
+  req.session.ultimaData = new Date(); //qualquer alteração nos cookies reseta o tempo de vida dele
   //res.cookie("sessionId" , req.cookies.sessionId || uuidV4())
   //console.log(req.sessionOptions)
-  next()
+  next();
 })
 
 app.use(function (req, res, next) {
-  console.log(req.session)
-  next()
+ 
+  next();
 })
 
 
 
 app.get('/test', function(req, res){
+ // console.log(req.location)
+  
+
 	//console.log('iuu')
   /*res.render('index', function(err, html){
   	console.log('iuu')
@@ -66,7 +71,7 @@ app.get('/test', function(req, res){
   	console.log(html)
   	res.send(html);
   });*/
-  res.render('teste');
+  res.render('templates/home/view/home');
 });
 
 
