@@ -6,7 +6,7 @@ var loc = 'pt-BR'
 	var LOCALIZADED_STRING_FLAG = "loc_";
 	var TEMPLATE_PATH = "./views/templates/";
 	var STRINGS_FILES_PATH = "./strings/";
-	var listaStringsSalvas = [];
+	var listaStringsSalvas = {};
 	var FILE_SUFFIX = ".html";
 	
 //}
@@ -27,10 +27,10 @@ var carregarPagina = function (path, cb){
 		var content = fs.readFileSync(path).toString();
 	} catch (err){
 		cb(err)
-		
+
 	}
 	content = content.replace(REGEX_TEMPLATE_SERVICE, replaceAuto);
-	
+
 	cb(null,content);
 }
 
@@ -71,24 +71,32 @@ var processarMatchLocString = function(flag, loc){
     }
 
     var processarMatchString = function(flag){
-    	flag = flag.substring(flag.length);
+    	console.log(flag)
     	return listaStringsSalvas[flag] || flag;
     }
     
     var prepararVariaveisAngular = function(angularObjects){
     	var angularObjectsString = "";
     	for (key in angularObjects){
-    		angularObjectsString += `$scope.${key}=${angularObjects[key].toString()};\n`;
+    		angularObjectsString += `$scope.${key}=${JSON.stringify(angularObjects[key])};\n`;
     	}
     	return angularObjectsString;
     }
 
 module.exports = function (filePath, options, callback) { // define the template engine
 
+	listaStringsSalvas.angular_objects = prepararVariaveisAngular({
+			teste:123,
+			arrayobjs:[{obj1:1},{obj2:2}],
+			string:"4123",
+			obj:{nome:"nome", pessoa:"teste"}
+		})
+
 	carregarPagina(filePath, function(err, content){
 		if (err){
 			return callback(err)
 		}
+		
 		return callback(null,content)
 	})
 
