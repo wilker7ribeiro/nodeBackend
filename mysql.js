@@ -1,7 +1,8 @@
 //const express = require('express');
 "use strict";
 var SQLString = require('./SQLSTring')
-var mysql     =    require('mysql');
+const fs = require('fs');
+const mysql     =    require('mysql');
 
 var pool      =    mysql.createPool({
     connectionLimit : 100, //important
@@ -9,80 +10,108 @@ var pool      =    mysql.createPool({
     user     : 'root',
     password : '123456',
     database : 'teste',
-    debug    :  false
-  });
+    debug    :  false,
+    /*ssl  : {
+    	ca : fs.readFileSync('./sslcert/rds-ssl-ca-cert.pem')
+    }*/
+});
 
+class DBDao {
+	constructor(){}
+	quit(){
+		pool.end()
+	}
 
-
-var getConnection = function(cb){
-	pool.getConnection(function(err,connection){
-		if (err) {
-			console.log(err)
-			connection.release();
-			cb(err,connection);
-			//
-			return;
-		}
-		//console.log('connected as id ' + connection.threadId);
-		cb(err, connection);
-
-		connection.on('error', function(err) {
-			console.log(err)
-			cb(err,connection);
-			console.log('Error in na query');
-			//res.json({"code" : 100, "status" : "Error in connection database"});
-			return;
-		});
-	})
-}
-
-
-
-var executarQuery = function(instrucao, argumentos , cb){
-	getConnection(function(err,connection){
-		connection.query(instrucao, argumentos, function(err,rows){
-			connection.release();
-			if(!err) {
-				cb(err, rows);
-			}
-			else{
-				cb(err, rows);
+	getConnection(cb){
+		pool.getConnection(function(err,connection){
+			if (err) {
 				console.log(err)
+				connection.release();
+				cb(err,connection);
+				//
+				return;
 			}
-		});
-	})
+			//console.log('connected as id ' + connection.threadId);
+			cb(err, connection);
+
+			connection.on('error', function(err) {
+				console.log(err)
+				cb(err,connection);
+				console.log('Error in na query');
+				//res.json({"code" : 100, "status" : "Error in connection database"});
+				return;
+			});
+		})
+	}
+
+
+
+	executarQuery(instrucao, argumentos , cb){
+		this.getConnection(function(err,connection){
+			connection.query(instrucao, argumentos, function(err,rows){
+				connection.release();
+				if(!err) {
+					cb(err, rows);
+				}
+				else{
+					cb(err, rows);
+					console.log(err)
+				}
+			});
+		})
+	}
+
+	count(tabela, cb){
+		this.executarQuery("SELECT count(*) FROM ??", tabela,function(err, data){
+			cb(err, data)
+		})
+	}
+
+	getAll(tabela, cb){
+		this.executarQuery("SELECT * FROM ??", tabela,function(err, data){
+			cb(err, data)
+		})
+	}
+
+	getAllWhere(tabela,value , cb){
+		this.executarQuery("SELECT * FROM ?? WHERE ?", [tabela, value],function(err, data){
+			cb(err, data)
+		})
+	}
+
+	insert(tabela,obj , cb){
+		this.executarQuery("INSERT INTO ?? SET  ?", [tabela, obj],function(err, data){
+			cb(err, data)
+		})
+	}
+
 }
 
 
-var count = function(tabela, cb){
-	executarQuery("select count(*) from ??", tabela,function(err, data){
-		cb(err, data)
-	})
-}
-
-var getAll = function(tabela, cb){
-	executarQuery("select * from ??", tabela,function(err, data){
-		cb(err, data)
-	})
-}
-
-var getAllWhere = function(tabela,value , cb){
-	executarQuery("select * from user where ?", [tabela, value],function(err, data){
-		cb(err, data)
-	})
-}
 
 var sqlString = new SQLString();
-sqlString.select(['p.nome', 'p.idpessoa', 'p.iduser']).from('pessoa','p');
-/*console.log(sqlString)
+var dao = new DBDao();
+sqlString.select(['p.nome', 'p.iduser']).from('pessoa','p');
+console.log(sqlString)
 console.log(mysql.format(sqlString.string, sqlString.argumentos));
 
-executarQuery(sqlString.string , sqlString.argumentos, function(err, data){
+dao.insert('user', {login:'login2', password: 'senha2'}, function(err,user){
+	console.log(user)
+	dao.getAll('user', function(err,users){
+	console.log(users)
+})
+})
+
+
+/*dao.executarQuery(sqlString.string , sqlString.argumentos, function(err, data){
 	console.log(data);
 })*/
-count('user', function(err,data){
+
+dao.count('user', function(err,data){
 	console.log(data)
 })
+
+//dao.quit()
 
 /*getAllWhere("user", {iduser:1}, function(err, user){
 	console.log(user);
